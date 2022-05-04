@@ -6,6 +6,7 @@ from utils import send_otp_code
 from .models import OtpCode, User
 from django.contrib import messages
 from .forms import VerifyCodeForm, UserLoginForm
+from django.contrib.auth import authenticate, login, logout, views as auth_views
 
 
 class UserRegisterView(View):
@@ -58,6 +59,28 @@ class UserRegisterVerifyCodeView(View):
         return redirect('home:home')
 
 
-# class UserLoginView(View):
-#     form_class = UserLoginForm
-#     template_name =
+class UserLoginView(View):
+    form_class = UserLoginForm
+    template_name = 'accounts/login.html'
+
+    def setup(self, request, *args, **kwargs):
+        self.next = request.GET.get('next')
+        return super().setup(request, *args, **kwargs)
+
+    def get(self, request):
+        form = self.form_class
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            user = authenticate(request, username=cd['username'], password=cd['password'])
+            if user is not None:
+                login(request, user)
+                messages.success(request, 'You logged in successfully', extra_tags='success')
+                if self.next:
+                    return redirect(self.next)
+                return redirect('home:home')
+            messages.error(request, 'Wrong username or password', extra_tags='warning')
+        return render(request, self.template_name, context={'form': form})

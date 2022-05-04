@@ -5,7 +5,7 @@ import random
 from utils import send_otp_code
 from .models import OtpCode, User
 from django.contrib import messages
-from .forms import VerifyCodeForm
+from .forms import VerifyCodeForm, UserLoginForm
 
 
 class UserRegisterView(View):
@@ -56,3 +56,8 @@ class UserRegisterVerifyCodeView(View):
                 messages.error(request, 'Wrong verification code', extra_tags='danger')
                 return redirect('accounts:user_verify')
         return redirect('home:home')
+
+
+# class UserLoginView(View):
+#     form_class = UserLoginForm
+#     template_name =
